@@ -6,7 +6,7 @@
 ## if file list is not given echo usage and exit
 if [ -z "$1" ]
 	then
-	echo 'Usage  ./iowait.sh host_list "seconds to iterate" "iowait threshold"'
+	echo 'Usage  ./iowait.sh host_list [seconds to iterate] [iowait threshold]'
 	exit 1
 fi
 ##if seconds period is not defined default will be 30
@@ -31,6 +31,8 @@ TMP_LOG1=$SCRIPT_HOME/tmp/aaa.$DATE
 TMP_LOG2=$SCRIPT_HOME/tmp/bbb.$DATE
 TMP_LOG3=$SCRIPT_HOME/tmp/ccc.$DATE
 LOG=$SCRIPT_HOME/log."$(echo $1)"
+###time script started
+start=`date +%s`
 
 cat /dev/null > $TMP_LOG1
 cat /dev/null > $TMP_LOG2
@@ -64,8 +66,15 @@ cat $TMP_LOG3 >> $LOG
 
 while (true)
 do
+
 	iowait $1
 	clear
+	##calculate how many seconds script is running
+	end=`date +%s`
+	runtime=$((end-start))
+        echo "Script is running for $runtime seconds"
+	##Print how many times since script started server from server list has iowait bigger than threshold
+	echo "Since script started servers from $1 that had iowait bigger than $IOWAIT_THRESHOLD_PERCENTANCE% are (first collumn is the count):"
 	awk '{print $1}' $LOG |sort | uniq -c
 	sleep $SECONDS
 done
